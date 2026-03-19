@@ -1,5 +1,6 @@
 package com.enseeiht.puissance4.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -42,13 +44,14 @@ public class User {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    
+    @JsonIgnore
     @OneToMany(mappedBy = "player1", fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @Builder.Default
     private List<Game> gamesAsPlayer1 = new java.util.ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "player2", fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: puissance4-service
+  namespace: puissance4
+spec:
+  selector:
+    app: puissance4-api
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: NodePort

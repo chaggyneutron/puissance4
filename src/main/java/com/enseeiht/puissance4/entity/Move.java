@@ -24,10 +24,11 @@ public class Move {
     @JoinColumn(name = "player_id", nullable = false)
     private User player;
 
-    @Column(nullable = false)
-    private int column;   // 0 à 6
+    @Column(name = "col_index")
+    private int column;
 
-    private int row;      // 0 à 5
+    @Column(name = "row_index")
+    private int row;
 
     @Builder.Default
     private LocalDateTime playedAt = LocalDateTime.now();

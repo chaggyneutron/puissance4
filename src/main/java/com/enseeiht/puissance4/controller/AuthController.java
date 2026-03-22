@@ -33,4 +33,10 @@ public class AuthController {
         String token = jwtUtil.generateToken(user.getEmail());
         return ResponseEntity.ok(Map.of("token", token, "user", UserDto.from(user)));
     }
+
+
+    @GetMapping("/health")
+    public ResponseEntity<?> health() {
+        return ResponseEntity.ok(Map.of("status", "healthy"));
+    }
 }

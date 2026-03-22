@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puissance4-api
+  namespace: puissance4
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: puissance4-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: puissance4-api
+    spec:
+      containers:
+        - name: puissance4-api
+          image: puissance4-api:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: puissance4-secrets
+                  key: database-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: puissance4-secrets
+                  key: database-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: puissance4-secrets
+                  key: database-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: puissance4-secrets
+                  key: jwt-secret
+            - name: JWT_EXPIRATION
+              valueFrom:
+                secretKeyRef:
+                  name: puissance4-secrets
+                  key: jwt-expiration
+          livenessProbe:
+            httpGet:
+              path: /api/auth/health
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /api/auth/health
+              port: 8080
+            initialDelaySeconds: 75
+            periodSeconds: 10
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi

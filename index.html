@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puissance 4</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: #2a2a38;
+    --p1: #ff4d6d;
+    --p1-glow: rgba(255,77,109,0.4);
+    --p2: #ffd60a;
+    --p2-glow: rgba(255,214,10,0.4);
+    --empty: #1e1e2e;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --accent: #ff4d6d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,77,109,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,77,109,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { display: none; position: relative; z-index: 1; }
+  .page.active { display: flex; }
+
+  /* ── AUTH PAGE ── */
+  #auth-page {
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 10vw, 6rem);
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, var(--p1), var(--p2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .logo-sub {
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: -0.5rem;
+  }
+
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+    animation: slideUp 0.4s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .auth-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 4px;
+  }
+
+  .auth-tab {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .auth-tab.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  .form-group { margin-bottom: 1rem; }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
+
+  input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  input:focus { border-color: var(--accent); }
+
+  .btn {
+    width: 100%;
+    padding: 0.85rem;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--p1), #ff6b35);
+    color: white;
+  }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px var(--p1-glow); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--p1);
+    border: 1px solid var(--p1);
+  }
+
+  .btn-danger:hover { background: var(--p1); color: white; }
+
+  .error-msg {
+    background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.3);
+    color: var(--p1);
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  /* ── LOBBY PAGE ── */
+  #lobby-page {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .topbar-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, var(--p1), var(--p2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--p1), var(--p2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .username-display { font-weight: 500; font-size: 0.95rem; }
+
+  .logout-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .logout-btn:hover { border-color: var(--p1); color: var(--p1); }
+
+  .lobby-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.1em;
+    color: var(--text);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-title span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .game-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.2s;
+  }
+
+  .game-card:hover { border-color: var(--accent); }
+
+  .game-card-info { flex: 1; }
+  .game-card-info .player-name { font-weight: 600; font-size: 0.95rem; }
+  .game-card-info .game-meta { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+
+  .status-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    background: rgba(255,214,10,0.15);
+    color: var(--p2);
+    margin-right: 1rem;
+  }
+
+  .join-btn {
+    background: var(--p1);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .join-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px var(--p1-glow); }
+
+  .create-game-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: transparent;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 1.5rem;
+  }
+
+  .create-game-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 2rem;
+  }
+
+  /* Ranking */
+  .rank-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .rank-row:last-child { border-bottom: none; }
+
+  .rank-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    color: var(--muted);
+    width: 20px;
+    text-align: center;
+  }
+
+  .rank-num.gold { color: var(--p2); }
+  .rank-num.silver { color: #aaa; }
+  .rank-num.bronze { color: #cd7f32; }
+
+  .rank-name { flex: 1; font-weight: 500; font-size: 0.9rem; }
+
+  .rank-stats {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .rank-stats .wr { color: var(--p1); font-weight: 600; }
+
+  /* ── GAME PAGE ── */
+  #game-page {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .game-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .back-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover { border-color: var(--text); color: var(--text); }
+
+  .players-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 600px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+
+  .player-slot {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    transition: all 0.3s;
+  }
+
+  .player-slot.active-turn {
+    background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.3);
+  }
+
+  .player-slot.p2.active-turn {
+    background: rgba(255,214,10,0.1);
+    border: 1px solid rgba(255,214,10,0.3);
+  }
+
+  .token-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .token-icon.p1 { background: var(--p1); box-shadow: 0 0 8px var(--p1-glow); }
+  .token-icon.p2 { background: var(--p2); box-shadow: 0 0 8px var(--p2-glow); }
+
+  .vs-divider {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    color: var(--muted);
+  }
+
+  .turn-indicator {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .turn-indicator.your-turn { color: var(--p1); }
+
+  /* Board */
+  .board-wrapper {
+    position: relative;
+  }
+
+  .board-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(ellipse at center, rgba(255,77,109,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .col-buttons {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 6px;
+    padding: 0 3px;
+  }
+
+  .col-btn {
+    height: 28px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    color: var(--muted);
+    font-size: 1rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .col-btn:hover { color: var(--p1); transform: translateY(-2px); }
+  .col-btn:disabled { cursor: not-allowed; opacity: 0.3; }
+
+  .board {
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .board-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+
+  .cell {
+    width: clamp(44px, 8vw, 68px);
+    height: clamp(44px, 8vw, 68px);
+    border-radius: 50%;
+    background: var(--empty);
+    border: 2px solid rgba(255,255,255,0.04);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .cell.p1 {
+    background: var(--p1);
+    border-color: var(--p1);
+    box-shadow: 0 0 16px var(--p1-glow), inset 0 -4px 0 rgba(0,0,0,0.2);
+    animation: dropIn 0.25s ease;
+  }
+
+  .cell.p2 {
+    background: var(--p2);
+    border-color: var(--p2);
+    box-shadow: 0 0 16px var(--p2-glow), inset 0 -4px 0 rgba(0,0,0,0.2);
+    animation: dropIn 0.25s ease;
+  }
+
+  .cell.winning {
+    animation: pulse 0.6s ease infinite alternate;
+  }
+
+  @keyframes dropIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+  }
+
+  /* Status banner */
+  .status-banner {
+    width: 100%;
+    max-width: 600px;
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-align: center;
+    display: none;
+  }
+
+  .status-banner.info {
+    background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.3);
+    color: var(--p1);
+    display: block;
+  }
+
+  .status-banner.success {
+    background: rgba(255,214,10,0.1);
+    border: 1px solid rgba(255,214,10,0.3);
+    color: var(--p2);
+    display: block;
+  }
+
+  .game-actions {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .game-actions .btn { margin-top: 0; }
+
+  /* Polling indicator */
+  .polling-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: inline-block;
+    margin-right: 6px;
+    animation: blink 1.5s ease infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  /* Refresh btn */
+  .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .refresh-btn:hover { border-color: var(--text); color: var(--text); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    z-index: 100;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-color: var(--p1); color: var(--p1); }
+  .toast.ok { border-color: #22c55e; color: #22c55e; }
+
+  @media (max-width: 700px) {
+    .lobby-content { grid-template-columns: 1fr; padding: 1rem; }
+    .topbar { padding: 0.75rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── AUTH PAGE ── -->
+<div id="auth-page" class="page active">
+  <div>
+    <div class="logo">Puissance 4</div>
+    <div class="logo-sub">Real-time multiplayer</div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign in</button>
+      <button class="auth-tab" onclick="switchTab('register')">Register</button>
+    </div>
+    <div id="auth-error" class="error-msg"></div>
+
+    <!-- Login form -->
+    <div id="login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" onclick="login()">Sign in</button>
+    </div>
+
+    <!-- Register form -->
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="reg-username" placeholder="your_name">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" onclick="register()">Create account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOBBY PAGE ── -->
+<div id="lobby-page" class="page">
+  <div class="topbar">
+    <div class="topbar-logo">P4</div>
+    <div class="user-info">
+      <div class="avatar" id="user-avatar">?</div>
+      <span class="username-display" id="username-display">—</span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="lobby-content">
+    <div>
+      <button class="create-game-btn" onclick="createGame()">+ Create new game</button>
+      <div class="section-title">
+        Available games <span id="games-count"></span>
+        <button class="refresh-btn" onclick="loadGames()" style="margin-left:auto">↻ Refresh</button>
+      </div>
+      <div id="games-list"></div>
+    </div>
+    <div>
+      <div class="section-title">Leaderboard</div>
+      <div class="card" id="leaderboard-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GAME PAGE ── -->
+<div id="game-page" class="page">
+  <div class="topbar">
+    <div class="topbar-logo">P4</div>
+    <div class="user-info">
+      <div class="avatar" id="game-user-avatar">?</div>
+      <span class="username-display" id="game-username-display">—</span>
+    </div>
+  </div>
+  <div class="game-layout">
+    <div class="game-header">
+      <button class="back-btn" onclick="goToLobby()">← Back to lobby</button>
+      <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--muted)">
+        <span class="polling-dot"></span> Live
+      </div>
+    </div>
+
+    <div class="players-display">
+      <div class="player-slot p1" id="slot-p1">
+        <div class="token-icon p1"></div>
+        <div>
+          <div style="font-weight:600;font-size:0.9rem" id="p1-name">Player 1</div>
+          <div class="turn-indicator" id="p1-turn">—</div>
+        </div>
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="player-slot p2" id="slot-p2">
+        <div class="token-icon p2"></div>
+        <div>
+          <div style="font-weight:600;font-size:0.9rem" id="p2-name">Waiting...</div>
+          <div class="turn-indicator" id="p2-turn">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="status-banner" class="status-banner"></div>
+
+    <div class="board-wrapper">
+      <div class="col-buttons" id="col-buttons">
+        <button class="col-btn" onclick="playMove(0)">▼</button>
+        <button class="col-btn" onclick="playMove(1)">▼</button>
+        <button class="col-btn" onclick="playMove(2)">▼</button>
+        <button class="col-btn" onclick="playMove(3)">▼</button>
+        <button class="col-btn" onclick="playMove(4)">▼</button>
+        <button class="col-btn" onclick="playMove(5)">▼</button>
+        <button class="col-btn" onclick="playMove(6)">▼</button>
+      </div>
+      <div class="board" id="board"></div>
+    </div>
+
+    <div class="game-actions">
+      <button class="btn btn-secondary" onclick="refreshGame()" style="flex:1">↻ Refresh</button>
+      <button class="btn btn-danger" onclick="abandonGame()" style="flex:1">Abandon</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8080';
+let token = localStorage.getItem('token');
+let currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+let currentGame = null;
+let pollInterval = null;
+
+// ── UTILS ──
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function toast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function showError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function api(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(API + path, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || data.error || 'Request failed');
+  return data;
+}
+
+// ── AUTH ──
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0) === (tab === 'login'));
+  });
+  document.getElementById('login-form').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  try {
+    const data = await api('POST', '/api/auth/login', { email, password });
+    setAuth(data);
+  } catch (e) { showError(e.message); }
+}
+
+async function register() {
+  const username = document.getElementById('reg-username').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  try {
+    const data = await api('POST', '/api/auth/register', { username, email, password });
+    setAuth(data);
+  } catch (e) { showError(e.message); }
+}
+
+function setAuth(data) {
+  token = data.token;
+  currentUser = data.user;
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify(currentUser));
+  enterLobby();
+}
+
+function logout() {
+  token = null; currentUser = null;
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  showPage('auth-page');
+}
+
+// ── LOBBY ──
+function enterLobby() {
+  document.getElementById('user-avatar').textContent = currentUser.username[0].toUpperCase();
+  document.getElementById('username-display').textContent = currentUser.username;
+  showPage('lobby-page');
+  loadGames();
+  loadLeaderboard();
+  stopPolling();
+}
+
+async function loadGames() {
+  try {
+    const games = await api('GET', '/api/games/available');
+    const list = document.getElementById('games-list');
+    document.getElementById('games-count').textContent = `(${games.length})`;
+    if (!games.length) {
+      list.innerHTML = '<div class="empty-state">No games available.<br>Create one!</div>';
+      return;
+    }
+    list.innerHTML = games.map(g => `
+      <div class="game-card">
+        <div class="game-card-info">
+          <div class="player-name">${g.player1.username}'s game</div>
+          <div class="game-meta">Game #${g.id}</div>
+        </div>
+        <span class="status-badge">Waiting</span>
+        ${g.player1.id !== currentUser.id
+          ? `<button class="join-btn" onclick="joinGame(${g.id})">Join</button>`
+          : `<button class="join-btn" onclick="openGame(${g.id})" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">Open</button>`}
+      </div>
+    `).join('');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function loadLeaderboard() {
+  try {
+    const rankings = await api('GET', '/api/rankings');
+    const colors = ['gold', 'silver', 'bronze'];
+    document.getElementById('leaderboard-list').innerHTML = rankings.length
+      ? rankings.slice(0, 10).map((r, i) => `
+        <div class="rank-row">
+          <div class="rank-num ${colors[i] || ''}">${i + 1}</div>
+          <div class="avatar" style="width:28px;height:28px;font-size:0.7rem">${r.user?.username?.[0]?.toUpperCase() || '?'}</div>
+          <div class="rank-name">${r.user?.username || 'Unknown'}</div>
+          <div class="rank-stats">
+            <div class="wr">${Math.round(r.winRate * 100)}% WR</div>
+            <div>${r.wins}W / ${r.losses}L</div>
+          </div>
+        </div>`).join('')
+      : '<div class="empty-state">No rankings yet</div>';
+  } catch (e) {}
+}
+
+async function createGame() {
+  try {
+    const game = await api('POST', '/api/games');
+    toast('Game created! Waiting for opponent...', 'ok');
+    openGame(game.id);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function joinGame(id) {
+  try {
+    await api('POST', `/api/games/${id}/join`);
+    openGame(id);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ── GAME ──
+function openGame(id) {
+  document.getElementById('game-user-avatar').textContent = currentUser.username[0].toUpperCase();
+  document.getElementById('game-username-display').textContent = currentUser.username;
+  showPage('game-page');
+  refreshGame(id);
+  startPolling(id);
+}
+
+async function refreshGame(id) {
+  const gameId = id || currentGame?.id;
+  if (!gameId) return;
+  try {
+    const game = await api('GET', `/api/games/${gameId}`);
+    currentGame = game;
+    renderGame(game);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function renderGame(game) {
+  // Players
+  document.getElementById('p1-name').textContent = game.player1?.username || 'Player 1';
+  document.getElementById('p2-name').textContent = game.player2?.username || 'Waiting for opponent...';
+
+  const isMyTurn = game.currentTurn?.id === currentUser.id;
+  const gameOver = game.status === 'FINISHED' || game.status === 'ABANDONED';
+
+  // Turn highlights
+  const p1Turn = game.currentTurn?.id === game.player1?.id;
+  document.getElementById('slot-p1').className = 'player-slot p1' + (p1Turn && !gameOver ? ' active-turn' : '');
+  document.getElementById('slot-p2').className = 'player-slot p2' + (!p1Turn && !gameOver ? ' active-turn' : '');
+  document.getElementById('p1-turn').textContent = p1Turn && !gameOver ? '← playing' : '';
+  document.getElementById('p2-turn').textContent = !p1Turn && !gameOver ? '← playing' : '';
+  document.getElementById('p1-turn').className = 'turn-indicator' + (p1Turn && isMyTurn ? ' your-turn' : '');
+  document.getElementById('p2-turn').className = 'turn-indicator' + (!p1Turn && isMyTurn ? ' your-turn' : '');
+
+  // Status banner
+  const banner = document.getElementById('status-banner');
+  if (game.status === 'WAITING') {
+    banner.textContent = '⏳ Waiting for an opponent to join...';
+    banner.className = 'status-banner info';
+  } else if (game.status === 'FINISHED') {
+    if (game.winner) {
+      const won = game.winner.id === currentUser.id;
+      banner.textContent = won ? '🏆 You won!' : `${game.winner.username} won!`;
+      banner.className = 'status-banner ' + (won ? 'success' : 'info');
+    } else {
+      banner.textContent = "It's a draw!";
+      banner.className = 'status-banner info';
+    }
+  } else if (game.status === 'ABANDONED') {
+    banner.textContent = 'Game abandoned.';
+    banner.className = 'status-banner info';
+  } else if (game.status === 'IN_PROGRESS') {
+    banner.textContent = isMyTurn ? '🎯 Your turn!' : `Waiting for ${game.currentTurn?.username}...`;
+    banner.className = 'status-banner ' + (isMyTurn ? 'success' : 'info');
+  } else {
+    banner.className = 'status-banner';
+  }
+
+  // Column buttons
+  const canPlay = game.status === 'IN_PROGRESS' && isMyTurn;
+  document.querySelectorAll('.col-btn').forEach(b => b.disabled = !canPlay);
+
+  // Board
+  const rows = game.board.split(',');
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = rows.map(row => `
+    <div class="board-row">
+      ${row.split('').map(cell => `
+        <div class="cell ${cell === '1' ? 'p1' : cell === '2' ? 'p2' : ''}"></div>
+      `).join('')}
+    </div>
+  `).join('');
+
+  if (gameOver) stopPolling();
+}
+
+async function playMove(col) {
+  if (!currentGame) return;
+  try {
+    const game = await api('POST', `/api/games/${currentGame.id}/move`, { column: col });
+    currentGame = game;
+    renderGame(game);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function abandonGame() {
+  if (!currentGame || !confirm('Abandon this game?')) return;
+  try {
+    const game = await api('POST', `/api/games/${currentGame.id}/abandon`);
+    currentGame = game;
+    renderGame(game);
+    stopPolling();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function goToLobby() {
+  stopPolling();
+  enterLobby();
+}
+
+// ── POLLING ──
+function startPolling(id) {
+  stopPolling();
+  pollInterval = setInterval(() => refreshGame(id), 2000);
+}
+
+function stopPolling() {
+  if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+}
+
+// ── INIT ──
+if (token && currentUser) {
+  enterLobby();
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const loginForm = document.getElementById('login-form');
+    const regForm = document.getElementById('register-form');
+    if (loginForm.style.display !== 'none') login();
+    else register();
+  }
+});
+</script>
+</body>
+</html>
